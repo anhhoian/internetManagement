@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.11.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+	<!-- Add support for component scanning -->
+	<context:annotation-config/>
+	<context:component-scan base-package="fa.training.springmvc" />
+	<jpa:repositories base-package="fa.training.springmvc.repository" />
+	<!-- Add support for conversion, formatting and validation support -->
+	<mvc:annotation-driven />
+	<!-- Define Spring MVC view resolver -->
+	<bean id="view"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	<!-- Add support for reading web resources: css, images, js, etc ... -->
+	<mvc:resources location="/WEB-INF/resources/"
+		mapping="/resources/**" />
+	<!-- Step 1: Define Database DataSource / connection pool -->
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName"
+			value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+		<property name="url"
+			value="jdbc:sqlserver://DESKTOP-05JDR01\\SQLEXPRESS:1433;databaseName=AssigmentSpring" />
+		<property name="username" value="sa1" />
+		<property name="password" value="123456" />
+	</bean>
+	<!-- Step 2: Setup Hibernate session factory -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan"
+			value="fa.training.springmvc.entities" />
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.SQLServer2012Dialect</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.show_sql">true</prop>
+			</props>
+		</property>
+	</bean>
+	
+	
+	<bean name="entityManagerFactory"
+	class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+	<property name="dataSource" ref="dataSource" />
+	<property name="packagesToScan"
+		value="fa.training.springmvc.entities" />
+	<property name="jpaVendorAdapter">
+		<bean
+			class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+	</property>
+	<property name="jpaProperties">
+		<props>
+			<prop key="hibernate.hbm2ddl.auto">update</prop>
+			<prop key="hibernate.dialect">org.hibernate.dialect.SQLServer2012Dialect</prop>
+			<prop key="hibernate.show_sql">true</prop>
+		</props>
+	</property>
+
+</bean>
+	<!-- Step 3: Setup Hibernate transaction manager -->
+	<!-- <bean id="transactionManager"
+		class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>-->
+
+		
+		
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+      <property name="entityManagerFactory" ref="entityManagerFactory" />
+ </bean>
+ 	
+	<!-- Step 4: Enable configuration of transactional behavior based on annotations -->
+	<tx:annotation-driven
+		transaction-manager="transactionManager" />
+	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+</beans>
